@@ -1,0 +1,1778 @@
+
+on load:
+    make console execute "/team add NoTag"
+    make console execute "/team modify NoTag nametagVisibility never"
+
+function addNoTag(player: player):
+    make console execute "/team join NoTag %{_player}%"
+
+function removeNoTag(player: player):
+    make console execute "/team leave %{_player}%"
+
+function startTimer():
+    wait 4 seconds
+    #broadcast "&6&lToggle game timer with /toggletimer"
+    broadcast "&c&l10 Minutes Remaining"
+    set {gameTime} to 600
+    set {bar} to boss bar with id "bbar1" with title "Game Time"
+    set bar style of {bar} to solid bar
+    loop all players:
+        if {team::%uuid of loop-player%} is set:
+            #add loop-player to {bar}
+            set {bar::%uuid of loop-player%} to true
+
+
+function setTeam(p: player):
+    wait 2 ticks
+    if {gameType} is "team":
+        if {redPlayers} is greater than {bluePlayers}:
+            set {team::%uuid of {_p}%} to "blue"
+            add 1 to {bluePlayers}
+        else if {bluePlayers} is greater than {redPlayers}:
+            set {team::%uuid of {_p}%} to "red"
+            add 1 to {redPlayers}
+        else:
+            set {_r} to random integer between 0 and 1
+            if {_r} is 0:
+                set {team::%uuid of {_p}%} to "blue"
+                add 1 to {bluePlayers}
+            else:
+                set {team::%uuid of {_p}%} to "red"
+                add 1 to {redPlayers}
+
+    else if {gameType} is "ffa":
+        set {team::%uuid of {_p}%} to random integer between 1 and 10000
+
+function respawnInGame(p: player):
+    set {loadout::%uuid of {_p}%} to {nextloadout::%uuid of {_p}%}
+    if {gameType} is "team":
+        toggle fastboard of {_p} on
+        set title of {_p}'s fastboard to "&e[Team Scores]"
+        set line 1 of {_p}'s fastboard to "&cRed Team - %{redPoints}%"
+        set line 2 of {_p}'s fastboard to "&bBlue Team - %{bluePoints}%"
+    if {gameType} is "ffa":
+        toggle fastboard of {_p} off
+    if {gameType} is "team":
+        if {team::%uuid of {_p}%} is "red":
+            if {map} is "pineriver":
+                set {_x} to random integer between 487 and 500
+                set {_z} to random integer between -78 and 0
+                teleport {_p} to location({_x}, 25, {_z}, world "%{map}%2")
+            else if {map} is "towny":
+                teleport {_p} to location(-121, 63, 84, world "%{map}%2")
+            else if {map} is "trenches":
+                teleport {_p} to location(12.5, -58, 10, world "%{map}%2")
+            else if {map} is "lodge":
+                teleport {_p} to location(201.5, -51, 292.5, world "%{map}%2")
+        else if {team::%uuid of {_p}%} is "blue":
+            if {map} is "pineriver":
+                set {_x} to random integer between 199 and 198
+                set {_z} to random integer between -20 and -21
+                teleport {_p} to location({_x}, 24, {_z}, world "%{map}%2")
+            else if {map} is "towny":
+                teleport {_p} to location(-238, 64, 0, world "%{map}%2")
+            else if {map} is "trenches":
+                teleport {_p} to location(65.5, -58, 116.5, world "%{map}%2")
+            else if {map} is "lodge":
+                teleport {_p} to location(295.5, -42, 143.5, world "%{map}%2")
+        wait 5 ticks
+        if {team::%uuid of {_p}%} is "red":
+            set {_item} to unbreakable leather helmet
+            dye {_item} red
+            #set helmet of {_p} to {_item}
+        else if {team::%uuid of {_p}%} is "blue":
+            set {_item} to unbreakable leather helmet
+            dye {_item} blue
+            #set helmet of {_p} to {_item}
+    
+    if {gameType} is "ffa":
+        if {map} is "pineriver":
+            if {pineLocs::*} is not set:
+                set {pineLocs::*} to location(486, 23, -159, world "%{map}%2"), location(391, 24, -152, world "%{map}%2"), location(245, 23, -134, world "%{map}%2"), location(359, 19, 93, world "%{map}%2"), location(419, 22, 45, world "%{map}%2"), location(243, 21, 40, world "%{map}%2"), location(315, 23, -137, world "%{map}%2")
+            #if size of {pineLocs::*} is less than 1:
+            #    set {pineLocs::*} to location(486, 23, -159, world "%{map}%2"), location(391, 24, -152, world "%{map}%2"), location(245, 23, -134, world "%{map}%2"), location(359, 19, 93, world "%{map}%2"), location(419, 22, 45, world "%{map}%2"), location(243, 21, 40, world "%{map}%2"), location(315, 23, -137, world "%{map}%2")
+            set {_spawnLoc} to a random element out of {pineLocs::*}
+            remove {_spawnLoc} from {pineLocs::*}
+            teleport {_p} to {_spawnLoc}
+
+        else if {map} is "towny":
+            if {townyLocs::*} is not set:
+                set {townyLocs::*} to location(-110, 64, 79, world "%{map}%2"), location(-116, 64, 6, world "%{map}%2"), location(-166, 63, -33, world "%{map}%2"), location(-236, 64, -26, world "%{map}%2"), location(-242, 63, 29, world "%{map}%2"), location(-174, 63, 77, world "%{map}%2"), location(-120, 69, -16, world "%{map}%2")
+            #if size of {townyLocs::*} is less than 1:
+            #    set {townyLocs::*} to location(-110, 64, 79, world "%{map}%2"), location(-116, 64, 6, world "%{map}%2"), location(-166, 63, -33, world "%{map}%2"), location(-236, 64, -26, world "%{map}%2"), location(-242, 63, 29, world "%{map}%2"), location(-174, 63, 77, world "%{map}%2"), location(-120, 69, -16, world "%{map}%2")
+            set {_spawnLoc} to a random element out of {townyLocs::*}
+            remove {_spawnLoc} from {townyLocs::*}
+            teleport {_p} to {_spawnLoc}
+
+        else if {map} is "trenches":
+            if {trenchesLocs::*} is not set:
+                set {trenchesLocs::*} to location(18, -57, -18, world "%{map}%2"), location(49, -57, -20, world "%{map}%2"), location(91, -58, 96, world "%{map}%2"), location(29, -58, 102, world "%{map}%2"), location(-35, -56, 98, world "%{map}%2"), location(-23, -57, 43, world "%{map}%2"), location(66, -57.5, 44, world "%{map}%2")
+            #if size of {townyLocs::*} is less than 1:
+            #    set {townyLocs::*} to location(-110, 64, 79, world "%{map}%2"), location(-116, 64, 6, world "%{map}%2"), location(-166, 63, -33, world "%{map}%2"), location(-236, 64, -26, world "%{map}%2"), location(-242, 63, 29, world "%{map}%2"), location(-174, 63, 77, world "%{map}%2"), location(-120, 69, -16, world "%{map}%2")
+            set {_spawnLoc} to a random element out of {trenchesLocs::*}
+            remove {_spawnLoc} from {trenchesLocs::*}
+            teleport {_p} to {_spawnLoc}
+
+        else if {map} is "lodge":
+            if {lodgeLocs::*} is not set:
+                # Old Locations
+                #set {lodgeLocs::*} to location(178, -56, 251, world "%{map}%2"), location(233, -47, 315, world "%{map}%2"), location(306, -46, 285, world "%{map}%2"), location(297, -42, 139, world "%{map}%2")
+                #New Locations
+                set {lodgeLocs::*} to location(265, -55, 207, world "%{map}%2"), location(253, -55, 237, world "%{map}%2"), location(214, -52, 161, world "%{map}%2"), location(255, -57, 167, world "%{map}%2"), location(234.5, -23.5, 173, world "%{map}%2"), location(220.5, -27.5, 236.5, world "%{map}%2")
+
+                #if size of {townyLocs::*} is less than 1:
+            #    set {townyLocs::*} to location(-110, 64, 79, world "%{map}%2"), location(-116, 64, 6, world "%{map}%2"), location(-166, 63, -33, world "%{map}%2"), location(-236, 64, -26, world "%{map}%2"), location(-242, 63, 29, world "%{map}%2"), location(-174, 63, 77, world "%{map}%2"), location(-120, 69, -16, world "%{map}%2")
+            set {_spawnLoc} to a random element out of {lodgeLocs::*}
+            remove {_spawnLoc} from {lodgeLocs::*}
+            teleport {_p} to {_spawnLoc}
+
+    wait 0.2 second
+    set {glockAmmo::%uuid of {_p}%} to 10
+    set {m4Ammo::%uuid of {_p}%} to 30
+    set {ltrAmmo::%uuid of {_p}%} to 5
+    set {miniAmmo::%uuid of {_p}%} to 50
+    set {grenadeAmmo::%uuid of {_p}%} to 8
+    set {famasAmmo::%uuid of {_p}%} to 20
+    set {krissAmmo::%uuid of {_p}%} to 20
+    
+    heal {_p}
+    feed {_p}
+    if {loadout::%uuid of {_p}%} is "assault":
+        clear {_p}'s inventory
+        set {_inventory} to {_p}'s inventory
+        set slot 1 of {_inventory} to red dye named "Glock" with lore "&fAmmo: 10", "&fF or offhand to reload"
+        set slot 8 of {_inventory} to 4 iron ingot named "Glock Mag"
+        set slot 2 of {_inventory} to 1 snowball named "Smoke Grenade"
+        set slot 3 of {_inventory} to 3 egg named "Grenade"
+        set slot 4 of {_inventory} to wooden pickaxe
+        set slot 5 of {_inventory} to 12 cooked beef
+        set slot 6 of {_inventory} to {_item}
+        if {mainweapon::%uuid of {_p}%} is "M4A1":
+            set slot 0 of {_inventory} to black dye named "M4A1" with lore "&fAmmo: 30", "&fF or offhand to reload"
+            set slot 7 of {_inventory} to 10 iron ingot named "M4A1 Mag"
+        else if {mainweapon::%uuid of {_p}%} is "FAMAS":
+            set slot 0 of {_inventory} to lime dye named "FAMAS" with lore "&fAmmo: 20", "&fF or offhand to reload"
+            set slot 7 of {_inventory} to 10 iron ingot named "FAMAS Mag"
+        else if {mainweapon::%uuid of {_p}%} is "Vector":
+            set slot 0 of {_inventory} to orange dye named "Kriss Vector" with lore "&fAmmo: 20", "&fF or offhand to reload"
+            set slot 7 of {_inventory} to 12 iron ingot named "Vector Mag"
+        #set {_p}'s inventory to {_inventory}
+
+    if {loadout::%uuid of {_p}%} is "recon":
+        clear {_p}'s inventory
+        set {_inventory} to {_p}'s inventory
+        set slot 0 of {_inventory} to spyglass named "L30 LTR" with lore "&fAmmo: 5", "&fLeft click to reload", "&fF or offhand to shoot"
+        set slot 7 of {_inventory} to 8 iron ingot named "L30 Mag"
+        set slot 1 of {_inventory} to red dye named "Glock"
+        set slot 8 of {_inventory} to 3 iron ingot named "Glock Mag"
+        set slot 2 of {_inventory} to 1 snowball named "Smoke Grenade"
+        set slot 3 of {_inventory} to yellow dye named "Dash"
+        set slot 4 of {_inventory} to 12 cooked beef
+        set slot 5 of {_inventory} to {_item}
+        #set {_p}'s inventory to {_inventory}
+
+    if {loadout::%uuid of {_p}%} is "engineer":
+        clear {_p}'s inventory
+        set {_inventory} to {_p}'s inventory
+        set slot 0 of {_inventory} to black dye named "M4A1" with lore "&fAmmo: 30", "&fF or offhand to reload"
+        set slot 8 of {_inventory} to 16 iron ingot named "M4A1 Mag"
+        set slot 1 of {_inventory} to 3 egg named "Grenade"
+        set slot 2 of {_inventory} to 32 oak planks
+        set slot 3 of {_inventory} to 24 cooked beef
+        set slot 4 of {_inventory} to {_item}
+        #set {_p}'s inventory to {_inventory}
+
+    if {loadout::%uuid of {_p}%} is "support":
+        clear {_p}'s inventory
+        set {_inventory} to {_p}'s inventory
+        set slot 0 of {_inventory} to pink dye named "Minigun" with lore "&fAmmo: 50", "&fF or offhand to reload"
+        set slot 8 of {_inventory} to 4 iron ingot named "Minigun Chain"
+        set slot 1 of {_inventory} to 3 egg named "Grenade"
+        set slot 2 of {_inventory} to 8 oak planks
+        set slot 3 of {_inventory} to 24 cooked beef
+        set slot 4 of {_inventory} to {_item}
+        #set {_p}'s inventory to {_inventory}
+
+    if {loadout::%uuid of {_p}%} is "demo":
+        clear {_p}'s inventory
+        set {_inventory} to {_p}'s inventory
+        set slot 0 of {_inventory} to green dye named "Grenade Launcher" with lore "&fAmmo: 8", "&fF or offhand to reload"
+        set slot 7 of {_inventory} to 8 iron ingot named "Grenade Mag"
+        set slot 1 of {_inventory} to red dye named "Glock"
+        set slot 8 of {_inventory} to 3 iron ingot named "Glock Mag"
+        set slot 2 of {_inventory} to 1 snowball named "Smoke Grenade"
+        set slot 3 of {_inventory} to 12 cooked beef
+        set slot 5 of {_inventory} to {_item}
+        #set {_p}'s inventory to {_inventory}
+
+function startGame():
+    clear {team::*}
+    clear {breakStage::*}
+    set {redPlayers} to 0
+    set {bluePlayers} to 0
+    set {redPoints} to 0
+    set {bluePoints} to 0
+    set {started} to true
+    set {_r} to random integer from 0 to 2
+    clear {pineLocs::*}
+    clear {townyLocs::*}
+    clear {trenchesLocs::*}
+    clear {lodgeLocs::*}
+    delete {pineLocs}
+    delete {townyLocs}
+    delete {trenchesLocs}
+    delete {lodgeLocs}
+    if {maps::*} is not set:
+        set {maps::*} to "pineriver", "towny", "trenches", "lodge"
+    set {map} to random element out of {maps::*}
+    remove {map} from {maps::*}
+    if online player count > 3:
+        set {_r} to random integer from 0 to 2
+        if {_r} is 0:
+            set {gameType} to "ffa"
+        else:
+            set {gameType} to "team"
+    else:
+        set {gameType} to "ffa"
+    execute console command "/mv clone %{map}% %{map}%2"
+    wait 20 ticks
+    set {_time} to a random integer between 0 and 24000
+    set {_t} to "%{_time}% ticks"
+    set {_tim} to {_t} parsed as timespan
+    if {map} is not "lodge":
+        set time of world "%{map}%2" to {_tim}
+    else:
+        set weather of "%{map}%2" to rainy
+    # Show to all players
+
+    if {gameType} is "ffa":
+        execute console command "/scoreboard objectives add kills playerKillCount ""Kills"""
+        execute console command "/scoreboard objectives setdisplay sidebar kills"
+
+    clear {kills::*}
+
+
+function crack(strength: number, block: block):
+    if {breakStage::%location of {_block}%} is not set:
+        set {breakStage::%location of {_block}%} to 0
+    add {_strength} to {breakStage::%location of {_block}%}
+    if {breakStage::%location of {_block}%} >= 1:
+        break {_block}
+        set {breakStage::%location of {_block}%} to 0
+    else:
+        make all players see damage of {_block} as {breakStage::%location of {_block}%} by random integer between 1 and 100000
+
+function pierceParticles(block: block, dir: vector, loc: location):
+    add -0.5 to vector length of {_dir}
+    set {_temp} to {_loc} offset by {_dir}
+    draw 6 of block using (type of {_block}) at {_temp}
+    draw dust particle using dustOption(rgb(0, 0, 0), 1) at {_temp}
+    add 1 to vector length of {_dir}
+    set {_temp} to {_loc} offset by {_dir}
+    draw 6 of block using (type of {_block}) at {_temp}
+    draw dust particle using dustOption(rgb(0, 0, 0), 1) at {_temp}
+    
+
+function shoot(p: player, range: number, pierce: number, damage: number, vertspread: number, horizspread: number, sniper: number) :: location:
+    set {_loc} to location of {_p}'s eye
+    add -0 to y-coordinate of {_loc}
+    set {_dir} to normalized vector from yaw {_p}'s yaw and pitch {_p}'s pitch
+    set vector length of {_dir} to 0.01
+    set {_randpitch} to random number between ({_vertspread}*-1) and {_vertspread}
+    set {_randyaw} to random number between ({_horizpread}*-1) and {_horizspread}
+    set {_r1} to random number from -1.5 and 1.5
+    set {_r2} to random integer from -1.5 and 1.5
+    if {_p} is crouching:
+        set {_randpitch} to {_randpitch} / 2
+        set {_randyaw} to {_randyaw} / 2
+    if {_p} is sprinting:
+        add random number between 0 and {_sniper} to {_randpitch}
+        add random number between 0 and {_sniper} to {_randyaw}
+        set {_randpitch} to {_randpitch} + {_r1}
+        set {_randyaw} to {_randyaw} + {_r2}
+    if {_p} is not on ground:
+        add random number between 0 and {_sniper} to {_randpitch}
+        add random number between 0 and {_sniper} to {_randyaw}
+        set {_randpitch} to {_randpitch} + {_r1}
+        set {_randyaw} to {_randyaw} + {_r2}
+    add {_randpitch} to pitch of {_dir}
+    add {_randyaw} to yaw of {_dir}
+
+    set {_hitGun::!!} to 1
+    set {_whoosh::!!} to 1
+    set {_pierced} to 0
+    loop ({_range}*2) times:
+
+        set {_tempLoc} to {_loc} offset by {_dir}
+        set {_block} to block at {_tempLoc}
+
+        if {_pierced} >= {_pierce}:
+            add -0.25 to vector length of {_dir}
+            set {_tempLoc} to {_loc} offset by {_dir}
+            return {_tempLoc}
+
+        #draw dust particle using dustOption(rgb(255, 251, 0, 1), 0.1) at {_tempLoc}
+        #morkazsk spawn 1 of particle "FLAME" for player at {_tempLoc}
+        draw 1 of dust using dustOption(rgb(255, 251, 0, 1), 0.1) at {_tempLoc} for all players
+        #set {_color} to Color.fromRGB(255,251,0)
+        #set {_dust} to new DustOptions({_color}, 0.1)
+        #{_p}.spawnParticle(Particle.REDSTONE,{_tempLoc},0,0,0,0,0,{_dust})
+        if {_block} is not air:
+            set {_type} to "%type of {_block}%"
+            if {_hitGun::*} contains location of {_block}:
+                #nothing
+
+            else if {_type} contains "glass":
+                play sound "minecraft:bulletimpact" with volume 0.8 at {_tempLoc}
+                play sound "minecraft:block.glass.break" at {_temploc}
+                pierceParticles({_block}, {_dir}, {_loc})
+                crack(0.5, {_block})
+                
+                add 1 to {_pierced}
+                add location of {_block} to {_hitGun::*}
+
+            else if {_type} contains "planks":
+                play sound "minecraft:bulletimpact" with volume 0.8 at {_tempLoc}
+
+
+                add location of {_block} to {_hitGun::*}
+                if {breakStage::%location of {_block}%} > 0.5:
+                    pierceParticles({_block}, {_dir}, {_loc})
+                    crack(0.1, {_block})
+                    add 1 to {_pierced}
+                else:
+                    crack(0.1, {_block})
+                    add -0.25 to vector length of {_dir}
+                    set {_back} to {_loc} offset by {_dir}
+                    draw 6 of block using (type of {_block}) at {_back}
+                    return {_back}
+
+            else if {_type} contains "log":
+                play sound "minecraft:bulletimpact" with volume 0.8 at {_tempLoc}
+                add location of {_block} to {_hitGun::*}
+                crack(0.1, {_block})
+                add -0.25 to vector length of {_dir}
+                set {_back} to {_loc} offset by {_dir}
+                draw 6 of block using (type of {_block}) at {_back}
+                return {_back}
+            
+            else if {_type} contains "wood":
+                play sound "minecraft:bulletimpact" with volume 0.8 at {_tempLoc}
+
+
+                add location of {_block} to {_hitGun::*}
+                if {breakStage::%location of {_block}%} > 0.5:
+                    pierceParticles({_block}, {_dir}, {_loc})
+                    crack(0.1, {_block})
+                    add 1 to {_pierced}
+                else:
+                    crack(0.1, {_block})
+                    add -0.5 to vector length of {_dir}
+                    set {_back} to {_loc} offset by {_dir}
+                    draw 6 of block using (type of {_block}) at {_back}
+                    return {_back}
+                
+
+            else if {_type} contains "terracotta":
+                play sound "minecraft:bulletimpact" with volume 0.8 at {_tempLoc}
+                add location of {_block} to {_hitGun::*}
+                crack(0.2, {_block})
+                add -0.25 to vector length of {_dir}
+                set {_back} to {_loc} offset by {_dir}
+                draw 6 of block using (type of {_block}) at {_back}
+                return {_back}
+
+            else if {_type} contains "stairs":
+                play sound "minecraft:bulletimpact" with volume 0.8 at {_tempLoc}
+                add location of {_block} to {_hitGun::*}
+                crack(0.2, {_block})
+                add -0.25 to vector length of {_dir}
+                set {_back} to {_loc} offset by {_dir}
+                draw 6 of block using (type of {_block}) at {_back}
+                return {_back}
+
+            else if {_type} contains "mushroom":
+                play sound "minecraft:bulletimpact" with volume 0.8 at {_tempLoc}
+                pierceParticles({_block}, {_dir}, {_loc})
+                crack(0.5, {_block})
+                
+                add 1 to {_pierced}
+                add location of {_block} to {_hitGun::*}
+            
+            else if {_type} contains "wool":
+                play sound "minecraft:bulletimpact" with volume 0.8 at {_tempLoc}
+                pierceParticles({_block}, {_dir}, {_loc})
+                crack(0.5, {_block})
+                
+                add 1 to {_pierced}
+                add location of {_block} to {_hitGun::*}
+            
+            else if {_type} contains "sign":
+                play sound "minecraft:bulletimpact" with volume 0.8 at {_tempLoc}
+                pierceParticles({_block}, {_dir}, {_loc})
+                crack(0.5, {_block})
+                
+                add 1 to {_pierced}
+                add location of {_block} to {_hitGun::*}
+
+            
+            else if {_type} contains "slab":
+                #play sound "minecraft:bulletimpact" with volume 0.8 at {_tempLoc}
+                #pierceParticles({_block}, {_dir}, {_loc})
+                #crack(0.2, {_block})
+                
+                #add 1 to {_pierced}
+                #add location of {_block} to {_hitGun::*}
+
+            else if {_type} is "iron bars":
+                #continue
+            else if {_type} is "player head":
+                #continue
+            else if {_type} contains "peony":
+                #continue
+            else if {_type} contains "snow":
+                #continue
+            else if {_type} contains "banner":
+                #continue
+            else if {_type} contains "rail":
+                #continue
+            else if {_type} contains "fern":
+                #continue
+            else if {_type} contains "lantern":
+                #continue
+            else if {_type} contains "lilac":
+                #continue
+            else if {_type} contains "rose":
+                #continue
+            else if {_type} contains "button":
+                #continue
+            else if {_type} contains "carpet":
+                #continue
+            else if {_type} contains "fence":
+                #continue
+            else if {_type} contains "sugar":
+                #continue
+            else if {_type} contains "vine":
+                #continue
+            else if {_type} contains "scaffolding":
+                #continue
+            else if {_type} is "tall grass":
+                #continue
+            else if {_type} is "short grass":
+                #continue
+
+            else if {_type} contains "door":
+                play sound "minecraft:block.wood.break" at {_tempLoc}
+            
+            else if {_type} contains "torch":
+                #continue
+            
+            else if {_type} contains "leaves":
+                play sound "minecraft:block.azalea_leaves.break" at {_tempLoc}
+            
+            else if {_type} contains "water":
+                # do nothing
+            else if {_type} contains "plate":
+                # do nothing
+            
+
+            else:
+                add -0.25 to vector length of {_dir}
+                set {_back} to {_loc} offset by {_dir}
+                
+                #particles
+                draw 6 of block using (type of {_block}) at {_back}
+
+                #sounds
+                play sound "minecraft:bulletimpact" with volume 0.8 at {_back}
+
+
+                return {_back}
+
+        loop all living entities in radius 5 of {_tempLoc}:
+            set {_entity} to loop-entity
+            if {_entity} is {_p}:
+                continue
+            if {_whoosh::*} does not contain {_entity}'s uuid:
+                set {_r} to random integer from 1 to 3
+                if {_r} is 1:
+                    play sound "minecraft:bulletwhoosh1" with volume 1.2 at {_tempLoc} for {_entity}
+                if {_r} is 2:
+                    play sound "minecraft:bulletwhoosh2" with volume 1.2 at {_tempLoc} for {_entity}
+                if {_r} is 3:
+                    play sound "minecraft:bulletwhoosh3" with volume 1.2 at {_tempLoc} for {_entity}
+                add {_entity}'s uuid to {_whoosh::*}
+###
+            set {_etloc} to location of {_entity}
+            add 1 to y-coordinate of {_etloc}
+            if distance between {_etloc} and {_tempLoc} is smaller than 1:
+###
+            set {_px} to x-coordinate of {_tempLoc}
+            set {_py} to y-coordinate of {_tempLoc}
+            set {_pz} to z-coordinate of {_tempLoc}
+
+            set {_handle} to {_entity}.getHandle()
+            set {_aabb} to {_handle}.getBoundingBox()
+            
+            set {_ex} to 0.15
+            set {_expandedMinX} to {_aabb}.minX - {_ex}
+            set {_expandedMinY} to {_aabb}.minY - {_ex}
+            set {_expandedMinZ} to {_aabb}.minZ - {_ex}
+            set {_expandedMaxX} to {_aabb}.maxX + {_ex}
+            set {_expandedMaxY} to {_aabb}.maxY + {_ex}
+            set {_expandedMaxZ} to {_aabb}.maxZ + {_ex}
+
+            if {_px} >= {_expandedMinX}:
+                if {_px} <= {_expandedMaxX}:
+                    if {_py} >= {_expandedMinY}:
+                        if {_py} <= {_expandedMaxY}:
+                            if {_pz} >= {_expandedMinZ}:
+                                if {_pz} <= {_expandedMaxZ}:
+                                    if {_hitGun::*} does not contain {_entity}'s uuid:
+                                        
+                                        #send "Hit" to {_p}
+                                        #broadcast "dmg?"
+                                        #{_entity}.setNoDamageTicks(0)
+                                        #{_entity}.damage({_damage}, {_p})
+                                        set the invincibility time span of {_entity} to 0 ticks
+                                        make {_p} damage {_entity} by {_damage}
+                                        add 1 to {_pierced}
+
+                                        add {_entity}'s uuid to {_hitGun::*}
+
+        add 0.25 to vector length of {_dir}
+        
+
+function updateCracks():
+    loop {breakStage::*}:
+        continue
+
+
+function recoil(p: player, cooldown: string):
+    #wait 1 tick
+    set {_then} to {lastRightClick::%uuid of {_p}%}
+    set {_cd} to {_cooldown} parsed as timespan
+    if difference between {_then} and now > {_cd}:
+        play hurt animation on {_p} with yaw 180
+    #play hurt by explosion on {_p}
+###
+    set {_horiz} to random number from ({_horizkb}*-1) to {_horizkb}
+    add ({_vertkb}) to pitch of {_p}
+    wait 1 tick
+    add ({_horiz}) to yaw of {_p}
+    wait 4 tick
+    subtract ({_vertkb}) from pitch of {_p}
+    wait 1 tick
+    subtract ({_hotiz}) from yaw of {_p}
+###
+
+function endGame():
+    set {cash::*} to 0
+    toggle fastboard of all players on
+    if {gameType} is "team":
+        if {redPoints} > {bluePoints}:
+            set {started} to false
+            send title "&cRed Wins!" to all players
+            loop all players:
+                removeNoTag(loop-player)
+                delete {team::%uuid of loop-player%}
+            # Show to all players
+            clear {breakStage::*}
+            clear {team::*}
+            set {redPlayers} to 0
+            set {bluePlayers} to 0
+            set {redPoints} to 0
+            set {bluePoints} to 0
+            set {started} to false
+            loop all players:
+                set title of loop-player's fastboard to "&e[Points]"
+                set line 1 of loop-player's fastboard to "&cKill Points - %{killPoints::%uuid of loop-player%}%"
+                set loop-player's gamemode to adventure
+                clear loop-player's inventory
+                execute console command "/mv teleport %loop-player% hub"
+        
+            wait 1 second
+            execute console command "/mv delete %{map}%2 --remove-players"
+            set gamemode of all players to adventure
+
+        else if {bluePoints} > {redPoints}:
+            set {started} to false
+            send title "&bBlue Wins!" to all players
+            loop all players:
+                removeNoTag(loop-player)
+                delete {team::%uuid of loop-player%}
+            # Show to all players
+            clear {breakStage::*}
+            clear {team::*}
+            set {redPlayers} to 0
+            set {bluePlayers} to 0
+            set {redPoints} to 0
+            set {bluePoints} to 0
+            set {started} to false
+            loop all players:
+                set title of loop-player's fastboard to "&e[Points]"
+                set line 1 of loop-player's fastboard to "&cKill Points - %{killPoints::%uuid of loop-player%}%"
+                set loop-player's gamemode to adventure
+                clear loop-player's inventory
+                execute console command "/mv teleport %loop-player% hub"
+            wait 1 second
+            execute console command "/mv delete %{map}%2 --remove-players"
+            set gamemode of all players to adventure
+
+        else:
+            set {started} to false
+            send title "&7Game Tie!" to all players
+            loop all players:
+                removeNoTag(loop-player)
+                delete {team::%uuid of loop-player%}
+            # Show to all players
+            clear {breakStage::*}
+            clear {team::*}
+            set {redPlayers} to 0
+            set {bluePlayers} to 0
+            set {redPoints} to 0
+            set {bluePoints} to 0
+            set {started} to false
+            loop all players:
+                set title of loop-player's fastboard to "&e[Points]"
+                set line 1 of loop-player's fastboard to "&cKill Points - %{killPoints::%uuid of loop-player%}%"
+                set loop-player's gamemode to adventure
+                clear loop-player's inventory
+                execute console command "/mv teleport %loop-player% hub"
+            wait 1 second
+            execute console command "/mv delete %{map}%2 --remove-players"
+            set gamemode of all players to adventure
+    
+    else if {gameType} is "ffa":
+        set {started} to false
+        delete {gameType}
+        send title "&cGame Over!" to all players
+        loop all players:
+            removeNoTag(loop-player)
+            delete {team::%uuid of loop-player%}
+        # Show to all players
+        clear {breakStage::*}
+        clear {team::*}
+        set {redPlayers} to 0
+        set {bluePlayers} to 0
+        set {redPoints} to 0
+        set {bluePoints} to 0
+        set {started} to false
+        loop all players:
+            set title of loop-player's fastboard to "&e[Points]"
+            set line 1 of loop-player's fastboard to "&cKill Points - %{killPoints::%uuid of loop-player%}%"
+            clear loop-player's inventory
+            execute console command "/mv teleport %loop-player% hub"
+        
+        wait 0.5 second
+        execute console command "/mv delete %{map}%2 --remove-players"
+        execute console command "/scoreboard objectives remove kills"
+        set gamemode of all players to adventure
+
+## GUNS
+
+# Glock
+on right click:
+    if player is holding a red dye:
+        if {reload::%uuid of player%} is set:
+            if difference between now and {reload::%uuid of player%} < {reloadtime::%uuid of player%}:
+                stop
+        set {reloadtime::%uuid of player%} to 0
+        if {glockAmmo::%uuid of player%} <= 0:
+            play sound "minecraft:empty" to player
+            stop
+        if {glockCooldown::%uuid of player%} is set:
+            if difference between now and {glockCooldown::%uuid of player%} < 0.2 seconds:
+                stop
+        set {glockCooldown::%uuid of player%} to now
+        if {glockAmmo::%uuid of player%} is not set:
+            set {glockAmmo::%uuid of player%} to 10
+        else:
+            add -1 to {glockAmmo::%uuid of player%}
+
+        set custom model data strings of player's tool to "glockflash"
+
+
+        recoil(player, "0.1 seconds")
+        #wait 1 tick
+        set {_pLoc} to location of player
+        play sound "minecraft:glock" with volume 20 at {_pLoc}
+        # add 1 to y-coordinate of {_pLoc}
+        #broadcast "%round((x-coordinate of {_ploc}))%"
+        execute console command "/execute in minecraft:%{map}%2 run setblock %round((x-coordinate of {_ploc}))% %round((y-coordinate of {_ploc}))% %round((z-coordinate of {_ploc}))% light[level=7] replace"
+        set {_impactloc} to shoot(player, 60, 1, 5, 0.3, 0.15, 0)
+
+        set {_dir} to normalized vector from yaw player's yaw and pitch player's pitch
+        set vector length of {_dir} to 1
+
+        set {_dust} to dust particle using dustOption(rgb(0, 0, 0), 1)
+        draw {_dust} at {_impactloc}
+        set {lastRightClick::%uuid of player%} to now
+        wait 1 tick
+        wait 2 ticks
+        set custom model data strings of player's tool to "glock"
+        execute console command "/execute in minecraft:%{map}%2 run setblock %round((x-coordinate of {_ploc}))% %round((y-coordinate of {_ploc}))% %round((z-coordinate of {_ploc}))% air replace"
+
+
+
+# M4A1
+on right click:
+    if player is holding a black dye:
+        if {reload::%uuid of player%} is set:
+            if difference between now and {reload::%uuid of player%} < {reloadtime::%uuid of player%}:
+                stop
+        set {reloadtime::%uuid of player%} to 0
+        if {m4Ammo::%uuid of player%} <= 0:
+            play sound "minecraft:empty" to player
+            stop
+        if {m4Cooldown::%uuid of player%} is set:
+            if difference between now and {m4Cooldown::%uuid of player%} < 0.15 seconds:
+                stop
+        set {m4Cooldown::%uuid of player%} to now
+        if {m4Ammo::%uuid of player%} is not set:
+            set {m4Ammo::%uuid of player%} to 30
+        else:
+            add -1 to {m4Ammo::%uuid of player%}
+        
+        set custom model data strings of player's tool to "mfourflash"
+        #send "Shot" to player
+        #wait 1 tick
+        play sound "minecraft:mfour" with volume 5 at location of player
+        #execute console command "/execute in minecraft:%{map}%2 run setblock %round((x-coordinate of {_ploc}))% %round((y-coordinate of {_ploc}))% %round((z-coordinate of {_ploc}))% light[level=7] replace"
+        set {_impactloc} to shoot(player, 200, 2, 5, 0.2, 0.1, 0)
+        recoil(player, "0.25 seconds")
+        set {_dir} to normalized vector from yaw player's yaw and pitch player's pitch
+        set vector length of {_dir} to 1
+
+        set {_dust} to dust particle using dustOption(rgb(0, 0, 0), 1)
+        draw {_dust} at {_impactloc}
+        set {lastRightClick::%uuid of player%} to now
+        wait 3 ticks
+        #execute console command "/execute in minecraft:%{map}%2 run setblock %round((x-coordinate of {_ploc}))% %round((y-coordinate of {_ploc}))% %round((z-coordinate of {_ploc}))% air replace"
+        set custom model data strings of player's tool to "mfour"
+
+# L30 LTR
+on swap hand items:
+    if player is holding a spyglass named "L30 LTR":
+        cancel event
+        if {reload::%uuid of player%} is set:
+            if difference between now and {reload::%uuid of player%} < {reloadtime::%uuid of player%}:
+                stop
+        set {reloadtime::%uuid of player%} to 0
+        if {ltrAmmo::%uuid of player%} <= 0:
+            play sound "minecraft:empty" to player
+            stop
+        if {ltrCooldown::%uuid of player%} is set:
+            if difference between now and {ltrCooldown::%uuid of player%} < 1.2 seconds:
+                stop
+        set {ltrCooldown::%uuid of player%} to now
+        if {ltrAmmo::%uuid of player%} is not set:
+            set {ltrAmmo::%uuid of player%} to 5
+        else:
+            add -1 to {ltrAmmo::%uuid of player%}
+        set {_pLoc} to location of player
+        execute console command "/execute in minecraft:%{map}%2 run setblock %round((x-coordinate of {_ploc}))% %round((y-coordinate of {_ploc}))% %round((z-coordinate of {_ploc}))% light[level=9] replace"
+        #set custom model data strings of player's tool to "ltrflash"
+
+        #recoil(player, "0.25 seconds")
+        #wait 1 tick
+        play sound "minecraft:ltr" with volume 30 at location of player
+        set {_impactloc} to shoot(player, 300, 3, 25, 0, 0, 5)
+
+    
+        set {_dir} to normalized vector from yaw player's yaw and pitch player's pitch
+        set vector length of {_dir} to 1
+
+        set {_dust} to dust particle using dustOption(rgb(0, 0, 0), 1)
+        draw {_dust} at {_impactloc}
+        set {lastRightClick::%uuid of player%} to now
+        wait 3 ticks
+        execute console command "/execute in minecraft:%{map}%2 run setblock %round((x-coordinate of {_ploc}))% %round((y-coordinate of {_ploc}))% %round((z-coordinate of {_ploc}))% air replace"
+        #set custom model data strings of player's tool to "ltr"
+
+# Minigun
+on right click:
+    if player is holding a pink dye:
+        if {reload::%uuid of player%} is set:
+            if difference between now and {reload::%uuid of player%} < {reloadtime::%uuid of player%}:
+                stop
+        set {reloadtime::%uuid of player%} to 0
+        if {miniCooldown::%uuid of player%} is set:
+            if difference between now and {miniCooldown::%uuid of player%} < 0.19 seconds:
+                stop
+        set {miniCooldown::%uuid of player%} to now
+
+        if {minigunRev::%uuid of player%} is not set:
+            set {minigunRev::%uuid of player%} to 0
+            play sound "minecraft:minigunrev" with volume 1 at location of player
+        set {_combo} to difference between {lastRightClick::%uuid of player%} and now
+        if {_combo} > 0.4 seconds:
+            set {lastRightClick::%uuid of player%} to now
+            clear {minigunRev::%uuid of player%}
+            stop
+        set {lastRightClick::%uuid of player%} to now
+        add 1 to {minigunRev::%uuid of player%}
+        if {minigunRev::%uuid of player%} < 12:
+            stop
+
+        if {miniAmmo::%uuid of player%} <= 0:
+            play sound "minecraft:empty" to player
+            stop
+        if {miniAmmo::%uuid of player%} is not set:
+            set {miniAmmo::%uuid of player%} to 50
+        else:
+            add -1 to {miniAmmo::%uuid of player%}
+
+        play sound "minecraft:minigun" with volume 20 at location of player
+        set {_impactloc} to shoot(player, 300, 4, 6, 2.8, 2.8, 0)
+        set {_pLoc} to location of player
+        execute console command "/execute in minecraft:%{map}%2 run setblock %round((x-coordinate of {_ploc}))% %round((y-coordinate of {_ploc}))% %round((z-coordinate of {_ploc}))% light[level=7] replace"
+        set {_dir} to normalized vector from yaw player's yaw and pitch player's pitch
+        set vector length of {_dir} to 1
+
+        set {_dust} to dust particle using dustOption(rgb(0, 0, 0), 1)
+        draw {_dust} at {_impactloc}
+        wait 2 ticks
+        play sound "minecraft:minigun" with volume 20 at location of player
+        set {_impactloc} to shoot(player, 300, 4, 6, 2.8, 2.8, 0)
+
+        set {_dir} to normalized vector from yaw player's yaw and pitch player's pitch
+        set vector length of {_dir} to 1
+
+        set {_dust} to dust particle using dustOption(rgb(0, 0, 0), 1)
+        draw {_dust} at {_impactloc}
+        wait 1 tick
+        execute console command "/execute in minecraft:%{map}%2 run setblock %round((x-coordinate of {_ploc}))% %round((y-coordinate of {_ploc}))% %round((z-coordinate of {_ploc}))% air replace"
+    
+# Grenade Launcher
+on right click:
+    if player is holding a green dye:
+        if {reload::%uuid of player%} is set:
+            if difference between now and {reload::%uuid of player%} < {reloadtime::%uuid of player%}:
+                stop
+        set {reloadtime::%uuid of player%} to 0
+        if {grenadeAmmo::%uuid of player%} <= 0:
+            play sound "minecraft:empty" to player
+            stop
+        if {grenadeCooldown::%uuid of player%} is set:
+            if difference between now and {grenadeCooldown::%uuid of player%} < 0.5 seconds:
+                stop
+        set {grenadeCooldown::%uuid of player%} to now
+        if {grenadeAmmo::%uuid of player%} is not set:
+            set {grenadeAmmo::%uuid of player%} to 8
+        else:
+            add -1 to {grenadeAmmo::%uuid of player%}
+        
+
+        #recoil(player, "0.25 seconds")
+        #wait 1 tick
+        play sound "minecraft:grenadelauncher" with volume 2 at location of player
+        make player shoot an egg with speed 2.2
+
+
+# Kriss Vector
+on right click:
+    if player is holding a orange dye:
+        if {reload::%uuid of player%} is set:
+            if difference between now and {reload::%uuid of player%} < {reloadtime::%uuid of player%}:
+                stop
+        set {reloadtime::%uuid of player%} to 0
+        if {krissAmmo::%uuid of player%} <= 0:
+            play sound "minecraft:empty" to player
+            stop
+        if {krissCooldown::%uuid of player%} is set:
+            if difference between now and {krissCooldown::%uuid of player%} < 0.05 seconds:
+                stop
+        set {krissCooldown::%uuid of player%} to now
+        if {krissAmmo::%uuid of player%} is not set:
+            set {krissAmmo::%uuid of player%} to 20
+        else:
+            add -4 to {krissAmmo::%uuid of player%}
+        set {_pLoc} to location of player
+        execute console command "/execute in minecraft:%{map}%2 run setblock %round((x-coordinate of {_ploc}))% %round((y-coordinate of {_ploc}))% %round((z-coordinate of {_ploc}))% light[level=7] replace"
+        #set custom model data strings of player's tool to "krissflash"
+        #wait 1 tick
+        play sound "minecraft:vector" with volume 20 at location of player
+        set {_impactloc} to shoot(player, 200, 1, 4, 4, 4, 0)
+        set {_dir} to normalized vector from yaw player's yaw and pitch player's pitch
+        set vector length of {_dir} to 1
+        set {_dust} to dust particle using dustOption(rgb(0, 0, 0), 1)
+        draw {_dust} at {_impactloc}
+
+        wait 1 tick
+        #play sound "minecraft:mfour" with volume 5 at location of player
+        set {_impactloc} to shoot(player, 200, 1, 4, 4, 4, 0)
+        set {_dir} to normalized vector from yaw player's yaw and pitch player's pitch
+        set vector length of {_dir} to 1
+        set {_dust} to dust particle using dustOption(rgb(0, 0, 0), 1)
+        draw {_dust} at {_impactloc}
+
+        wait 1 tick
+        #play sound "minecraft:mfour" with volume 5 at location of player
+        set {_impactloc} to shoot(player, 200, 1, 4, 4, 4, 0)
+        set {_dir} to normalized vector from yaw player's yaw and pitch player's pitch
+        set vector length of {_dir} to 1
+        set {_dust} to dust particle using dustOption(rgb(0, 0, 0), 1)
+        draw {_dust} at {_impactloc}
+    
+        wait 1 tick
+        #play sound "minecraft:mfour" with volume 5 at location of player
+        set {_impactloc} to shoot(player, 200, 1, 4, 4, 4, 0)
+        set {_dir} to normalized vector from yaw player's yaw and pitch player's pitch
+        set vector length of {_dir} to 1
+        set {_dust} to dust particle using dustOption(rgb(0, 0, 0), 1)
+        draw {_dust} at {_impactloc}
+        #wait 3 ticks
+        #set custom model data strings of player's tool to "kriss"
+        set {lastRightClick::%uuid of player%} to now
+        execute console command "/execute in minecraft:%{map}%2 run setblock %round((x-coordinate of {_ploc}))% %round((y-coordinate of {_ploc}))% %round((z-coordinate of {_ploc}))% air replace"
+
+on left click:
+    if player is holding a orange dye:
+        if custom model data strings of player's tool are "vectornormal":
+            set custom model data strings of player's tool to "vectoraim"
+        else:
+            set custom model data strings of player's tool to "vectornormal"
+
+
+# FAMAS
+on right click:
+    if player is holding a lime dye:
+        if {reload::%uuid of player%} is set:
+            if difference between now and {reload::%uuid of player%} < {reloadtime::%uuid of player%}:
+                stop
+        set {reloadtime::%uuid of player%} to 0
+        if {famasAmmo::%uuid of player%} <= 0:
+            play sound "minecraft:empty" to player
+            stop
+        if {famasCooldown::%uuid of player%} is set:
+            if difference between now and {famasCooldown::%uuid of player%} < 0.5 seconds:
+                stop
+        set {famasCooldown::%uuid of player%} to now
+        if {famasAmmo::%uuid of player%} is not set:
+            set {famasAmmo::%uuid of player%} to 20
+        else:
+            add -3 to {famasAmmo::%uuid of player%}
+        set {_pLoc} to location of player
+        execute console command "/execute in minecraft:%{map}%2 run setblock %round((x-coordinate of {_ploc}))% %round((y-coordinate of {_ploc}))% %round((z-coordinate of {_ploc}))% light[level=7] replace"
+        #set custom model data strings of player's tool to "krissflash"
+        #wait 1 tick
+        play sound "minecraft:famas" with volume 20 at location of player
+        set {_impactloc} to shoot(player, 200, 2, 5, 0.2, 0.1, 0)
+        recoil(player, "0.25 seconds")
+        set {_dir} to normalized vector from yaw player's yaw and pitch player's pitch
+        set vector length of {_dir} to 1
+        set {_dust} to dust particle using dustOption(rgb(0, 0, 0), 1)
+        draw {_dust} at {_impactloc}
+
+        wait 2 tick
+        set {_impactloc} to shoot(player, 200, 2, 5, 0.2, 0.1, 0)
+        set {_dir} to normalized vector from yaw player's yaw and pitch player's pitch
+        set vector length of {_dir} to 1
+        set {_dust} to dust particle using dustOption(rgb(0, 0, 0), 1)
+        draw {_dust} at {_impactloc}
+
+        wait 2 tick
+        set {_impactloc} to shoot(player, 200, 2, 5, 0.2, 0.1, 0)
+        set {_dir} to normalized vector from yaw player's yaw and pitch player's pitch
+        set vector length of {_dir} to 1
+        set {_dust} to dust particle using dustOption(rgb(0, 0, 0), 1)
+        draw {_dust} at {_impactloc}
+        #wait 3 ticks
+        #set custom model data strings of player's tool to "kriss"
+        set {lastRightClick::%uuid of player%} to now
+        execute console command "/execute in minecraft:%{map}%2 run setblock %round((x-coordinate of {_ploc}))% %round((y-coordinate of {_ploc}))% %round((z-coordinate of {_ploc}))% air replace"
+
+# Reload
+
+on left click:
+    if {reloadtime::%uuid of player%} is not set:
+        set {reloadtime::%uuid of player%} to 0
+    if {reloadtime::%uuid of player%} is 0:
+        if player is holding a spyglass named "L30 LTR":
+            cancel event
+            if player's inventory contains iron ingot named "L30 Mag":
+                play sound "minecraft:mfourreload" to player
+                set item cooldown of player's tool for player to 3 seconds
+                remove 1 iron ingot named "L30 Mag" from player's inventory
+                set {ltrAmmo::%uuid of player%} to 5
+                set {reload::%uuid of player%} to now
+                set {reloadtime::%uuid of player%} to 3 seconds
+                wait 3 seconds
+                set {reloadtime::%uuid of player%} to 0
+
+on swap hand items:
+    if {reloadtime::%uuid of player%} is not set:
+        set {reloadtime::%uuid of player%} to 0
+    if {reloadtime::%uuid of player%} is 0:
+        if player is holding a red dye:
+            cancel event
+            if player's inventory contains iron ingot named "Glock Mag":
+                play sound "minecraft:glockreload" to player
+                set item cooldown of player's tool for player to 2 seconds
+                remove 1 iron ingot named "Glock Mag" from player's inventory
+                set {glockAmmo::%uuid of player%} to 10
+                set {reload::%uuid of player%} to now
+                set {reloadtime::%uuid of player%} to 2.2 seconds
+                wait 2.2 seconds
+                set {reloadtime::%uuid of player%} to 0
+        if player is holding a black dye:
+            cancel event
+            if player's inventory contains iron ingot named "M4A1 Mag":
+                play sound "minecraft:mfourreload" to player
+                set item cooldown of player's tool for player to 3 seconds
+                remove 1 iron ingot named "M4A1 Mag" from player's inventory
+                set {m4Ammo::%uuid of player%} to 30
+                set {reload::%uuid of player%} to now
+                set {reloadtime::%uuid of player%} to 3 seconds
+                wait 3 seconds
+                set {reloadtime::%uuid of player%} to 0
+        if player is holding a pink dye:
+            cancel event
+            if player's inventory contains iron ingot named "Minigun Chain":
+                play sound "minecraft:mfourreload" to player
+                set item cooldown of player's tool for player to 6 seconds
+                remove 1 iron ingot named "Minigun Chain" from player's inventory
+                set {miniAmmo::%uuid of player%} to 50
+                set {reload::%uuid of player%} to now
+                set {reloadtime::%uuid of player%} to 6 seconds
+                wait 6 seconds
+                set {reloadtime::%uuid of player%} to 0
+
+        if player is holding a green dye:
+            cancel event
+            if player's inventory contains iron ingot named "Grenade Mag":
+                play sound "minecraft:mfourreload" to player
+                set item cooldown of player's tool for player to 5 seconds
+                remove 1 iron ingot named "Grenade Mag" from player's inventory
+                set {grenadeAmmo::%uuid of player%} to 8
+                set {reload::%uuid of player%} to now
+                set {reloadtime::%uuid of player%} to 4 seconds
+                wait 4 seconds
+                set {reloadtime::%uuid of player%} to 0
+
+        if player is holding a orange dye:
+            cancel event
+            if player's inventory contains iron ingot named "Vector Mag":
+                play sound "minecraft:mfourreload" to player
+                set item cooldown of player's tool for player to 1.5 seconds
+                remove 1 iron ingot named "Vector Mag" from player's inventory
+                set {krissAmmo::%uuid of player%} to 20
+                set {reload::%uuid of player%} to now
+                set {reloadtime::%uuid of player%} to 1.5 seconds
+                wait 1.5 seconds
+                set {reloadtime::%uuid of player%} to 0
+
+        if player is holding a lime dye:
+            cancel event
+            if player's inventory contains iron ingot named "FAMAS Mag":
+                play sound "minecraft:mfourreload" to player
+                set item cooldown of player's tool for player to 3 seconds
+                remove 1 iron ingot named "FAMAS Mag" from player's inventory
+                set {famasAmmo::%uuid of player%} to 30
+                set {reload::%uuid of player%} to now
+                set {reloadtime::%uuid of player%} to 3 seconds
+                wait 3 seconds
+                set {reloadtime::%uuid of player%} to 0
+
+
+
+## OTHER WEAPONS
+
+on projectile hit:
+    if event-projectile is a snowball:
+        if event.getHitBlock() is set:
+            set {_block} to event.getHitBlock()
+        cancel event
+        set {_shape} to a sphere with radius 4
+        set {_part} to dust particle using dustOption(rgb(109, 96, 96), 10) 
+        set particle of {_shape} to {_part}
+        set {_shape}'s particle density to 1.5
+        loop 5 times:
+            draw shape {_shape} at {_block}
+            wait 0.8 second         
+
+    if event-projectile is a egg:
+        if event.getHitBlock() is set:
+            set {_block} to event.getHitBlock()
+        cancel event
+        create an explosion of force 1.4 at {_block}
+        make shooter of event-projectile damage all players in radius 3 of {_block} by 9
+
+        
+## EFFECTS
+every 1 second:
+    if {gameTime} > 0:
+        if {started} is true:
+            if {gameTime} is 300:
+                broadcast "&c&l5 Minutes Remaining"
+            if {gameTime} is 120:
+                broadcast "&c&l2 Minutes Remaining"
+            if {gameTime} is 60:
+                broadcast "&c&l1 Minute Remaining"
+            
+            set bar progress of {bar} to (({gameTime}/600)*100)
+            add -1 to {gameTime}
+    else:
+        if {started} is true:
+            set {started} to false
+            endGame()
+            remove all players from {bar}
+            delete {bar}
+            set {gameTime} to 99999999
+
+    loop all players:
+        if loop-player is holding a pink dye:
+            apply slowness potion of tier 2 without any particles whilst hiding the potion icon to loop-player for 1 second
+        else if custom model data strings of loop-player's tool is "vectoraim":
+            apply slowness potion of tier 2 without any particles whilst hiding the potion icon to loop-player for 1 second
+
+every 30 seconds:
+    if {started} is true:
+        send actionbar "&fGlowing" to all players
+        apply glowing potion of tier 1 without any particles whilst hiding the potion icon to all players for 4.5 seconds
+
+
+
+on sheep dye:
+    cancel event
+
+on player spawn change:
+    if event-playerspawnchangereason = bed:
+        cancel event
+
+on damage:
+    set {_loc} to location of victim
+    add 1 to y-coordinate of {_loc}
+    draw 15 of block using nether wart block at {_loc}
+
+on damage:
+    if attacker is a player:
+        if {hitDing::%uuid of attacker%} is true:
+            play sound {hitDingNoise::%uuid of attacker%} with volume 0.8 and pitch 1 to attacker
+
+on break:
+    event.setDropItems(false)
+
+on drop:
+    if event-entity is not a player:
+        cancel event
+
+on craft:
+    cancel event
+
+on player world change:
+    set {radio::%uuid of event-player%} to 0
+
+on command "/radio":
+    wait 10 tick
+    if {radio::%uuid of event-player%} is 1:
+        while player is online:
+            if {radio::%uuid of event-player%} is 0:
+                stop
+            if {songlist::%uuid of event-player%::*} is not set:
+                set {songlist::%uuid of event-player%::*} to "smellsliketeenspirit", "routinesinthenight", "jigsawfallingintoplace", "always", "onelastbreath", "mapoftheproblem", "theemptinessmachine"
+
+            set {_song} to a random element out of {songlist::%uuid of player%::*}
+            play sound "minecraft:%{_song}%" in hostile category with volume 1 to event-player
+            remove {_song} from {songlist::%uuid of event-player%::*}
+            loop 259 times:
+                if {radio::%uuid of event-player%} is 0:
+                    stop
+                wait 1 second
+    
+
+
+on join:
+    #
+    if {killPoints::%uuid of player%} is not set:
+        set {killPoints::%uuid of player%} to 0
+    if {upgrades::%uuid of player%::killcash} is not set:
+        set {upgrades::%uuid of player%::killcash} to 5
+    if {diveTrigger::%uuid of player%} is not set:
+        set {diveTrigger::%uuid of player%} to "click"
+
+    toggle player's fastboard on
+    set title of player's fastboard to "&e[Points]"
+    set line 1 of player's fastboard to "&cKill Points - %{killPoints::%uuid of player%}%"
+    wait 1 second
+    execute console command "/mv teleport %player% hub"
+    if {team::%uuid of player%} is set:
+        make player execute command "/leavegame"
+
+    if {hitDing::%uuid of player%} is not set:
+        set {hitDing::%uuid of player%} to false
+
+    if {hitDingNoise::%uuid of player%} is not set:
+        set {hitDingNoise::%uuid of player%} to "minecraft:block.note_block.bell"
+
+    set tick rate of player to 120
+
+
+
+
+## DEBUG
+
+command /resourcepack:
+    trigger:
+        set {pack::1} to random uuid
+        send resource pack from url "https://6891497fc33e919b1f1505e3.manager.minehut.com/v1/resource_packs/84e2769f-0675-41c3-88ef-360c36c12d11" with uuid {pack::1} with prompt "This Adds Cool Stuff!!!" to player with force
+
+command /resetmap:
+    permission: op 
+    trigger:
+        delete {breakStage::*}
+command /endgame:
+    permission: op
+    trigger:
+        set {gameTime} to 99999999
+        endGame()
+    
+command /toggletimer:
+    trigger:
+        if {bar::%uuid of player%} is true:
+            remove player from {bar}
+            set {bar::%uuid of player%} to false
+        else:
+            add player to {bar}
+            set {bar::%uuid of player%} to true
+        
+command /startbar:
+    permission: op
+    trigger:
+        startTimer()
+
+command /togglescore:
+    trigger:
+        if {gameType} is "team":
+            toggle player's fastboard
+        
+        if {gameType} is "ffa":
+            #reset scoreboard of player
+
+command /toggledhitding:
+    trigger:
+        if {hitDing::%uuid of player%} is false:
+            set {hitDing::%uuid of player%} to true
+            send "&bHit ding is now enabled" to player
+        else:
+            set {hitDing::%uuid of player%} to false
+            send "&bHit ding is now disabled" to player
+    
+command /sethitding <string>:
+    usage: /sethitding <minecraft noise> for example: /sethitding minecraft:block.note_block.bell or you can reset with /sethitding reset
+    trigger:
+        if arg is "reset":
+            set {hitDingNoise::%uuid of player%} to "minecraft:block.note_block.bell"
+        else:
+            set {hitDingNoise::%uuid of player%} to arg
+
+    
+command /givemoney <number>:
+    permission: op
+    trigger:
+        add arg to {cash::%uuid of player%}
+command /addscore:
+    permission: op
+    trigger:
+        add 5 to {redPoints}
+
+command /hide:
+    permission: op
+    trigger:
+        addNoTag(player)
+
+command /show:
+    permission: op
+    trigger:
+        removeNoTag(player)
+
+command /bigreset:
+    permission: op
+    trigger:
+        clear {killPoints::*}
+        clear {upgrades::*}
+
+command /addpoints <number> <player>:
+    permission: op
+    trigger:
+        add arg-1 to {killPoints::%uuid of arg-2%}
+
+command /radio:
+    trigger:
+        if {radio::%uuid of player%} is 1:
+            set {radio::%uuid of player%} to 0
+            stop all sounds for player
+            send "Radio is now &cOFF&f." to player
+            stop
+        if {radio::%uuid of player%} is 0:
+            set {radio::%uuid of player%} to 1
+        else if {radio::%uuid of player%} is not set:
+            set {radio::%uuid of player%} to 1
+        
+        send "Radio is now &aON&f. To adjust song volume, change the 'Hostile' slider in sound settings" to player
+        
+
+command /discord:
+    trigger:
+        execute console command "/tellraw %player% {""bold"":true,""clickEvent"":{""action"":""open_url"",""value"":""https://discord.gg/TmJRtVk6Qk""},""color"":""light_purple"",""text"":""Click here to join the discord""}"
+
+
+command /gamehelp:
+    trigger:
+        set {_inventory} to a chest inventory with 1 row named "Help"
+        set slot 0 of {_inventory} to a black dye named "&6Guns become inaccurate when sprinting or jumping."
+        set slot 1 of {_inventory} to a glass named "&6Most blocks can be destroyed. Weaker blocks like planks and glass can be shot through."
+        set slot 2 of {_inventory} to a iron ingot named "&6Switch a gun to your offhand to reload."
+        set slot 3 of {_inventory} to a lever named "&6Do /leavegame to leave a gamemode"
+        set slot 4 of {_inventory} to a sculk named "&6Use /w <message> to whisper to players within 4 blocks of you."
+        set slot 5 of {_inventory} to a gold ingot named "&6Use /class to switch classes when in a match. Use /shop to buy items in a match."
+        set slot 6 of {_inventory} to a jukebox named "&6Use /togglehitding to toggle hit ding, or /sethitding <minecraft noise> to set it to something else!"
+        open {_inventory} to player
+
+command /leavegame:
+    trigger:
+        if {team::%uuid of player%} is "red":
+            subtract 1 from {redPlayers}
+        else if {team::%uuid of player%} is "blue":
+            subtract 1 from {bluePlayers}
+        toggle player's fastboard on
+        set title of player's fastboard to "&e[Points]"
+        set line 1 of player's fastboard to "&cKill Points - %{killPoints::%uuid of player%}%"
+        clear {team::%uuid of player%}
+        delete {team::%uuid of player%}
+        clear player's inventory
+        execute console command "/mv teleport %player% hub"
+        wait 0.5 seconds
+        set player's gamemode to adventure
+        removeNoTag(player)
+        heal player
+        feed player
+
+command /class:
+    trigger:
+        if {team::%uuid of player%} is set:
+            set {_inventory} to a chest inventory with 3 row named "Select Loadout"
+            set slot 2 of {_inventory} to a diamond named "Select Assault"
+            set slot 6 of {_inventory} to a diamond named "Select Recon"
+            set slot 4 of {_inventory} to a diamond named "Select Engineer"
+            set slot 20 of {_inventory} to a diamond named "Select Support"
+            set slot 22 of {_inventory} to a diamond named "Select Demolitionist"
+            set slot 24 of {_inventory} to a barrier named "Coming Soon"
+            open {_inventory} to player
+
+command /w <text>:
+    trigger:
+        loop all players:
+            if distance between loop-player and player <= 4:
+                if loop-player is not player:
+                    send "&7[Whisper] &f%player%: %arg%" to loop-player
+
+command /start:
+    trigger:
+        if {team::%uuid of player%} is not set:
+            set {_inventory} to a chest inventory with 3 row named "Select Loadout"
+            set slot 2 of {_inventory} to a diamond named "&fAssault" with lore "&f- Offense based"
+            set slot 6 of {_inventory} to a diamond named "&fRecon" with lore "&f- Focused on sniping"
+            set slot 4 of {_inventory} to a diamond named "&fEngineer" with lore "&f- Building and traps"
+            set slot 20 of {_inventory} to a diamond named "&fSupport" with lore "&f- Slow and powerful"
+            set slot 22 of {_inventory} to a diamond named "&fDemolitionist" with lore "&f- Bombs"
+            set slot 24 of {_inventory} to a barrier named "Coming Soon"
+            open {_inventory} to player
+
+command /killshop:
+    trigger:
+        if {team::%uuid of player%} is not set:
+            set {_inventory} to a chest inventory with 3 row named "Points: %{killPoints::%uuid of player%}%"
+            #set slot 10 of {_inventory} to a gold ingot named "&6Cash on Kill" with lore "&6Current value: $%{upgrades::%uuid of player%::killcash}%" and "&6Cost to Upgrade: %{upgrades::%uuid of player%::killcash}%p"
+            set slot 11 of {_inventory} to a spyglass named "&6Unlock Recon" with lore "&640p"
+            set slot 12 of {_inventory} to a pink dye named "&6Unlock Support" with lore "&640p"
+            set slot 13 of {_inventory} to a green dye named "&6Unlock Demolitionist" with lore "&630p"
+            set slot 14 of {_inventory} to a lime dye named "&6Unlock FAMAS" with lore "&615p"
+            set slot 15 of {_inventory} to a orange dye named "&6Unlock Kriss Vector" with lore "&615p"
+            open {_inventory} to player
+    
+on inventory click:
+    set {_points} to {killPoints::%uuid of player%}
+    set title of player's fastboard to "&e[Points]"
+    set line 1 of player's fastboard to "&cKill Points - %{killPoints::%uuid of player%}%"
+
+    if event-item is a gold ingot named "&6Cash on Kill":
+        cancel event
+        if {killPoints::%uuid of player%} >= {upgrades::%uuid of player%::killcash}:
+            subtract {upgrades::%uuid of player%::killcash} from {killPoints::%uuid of player%}
+            add 1 to {upgrades::%uuid of player%::killcash}
+            set slot 10 of player's open inventory to a gold ingot named "&6Cash on Kill" with lore "&6Current value: $%{upgrades::%uuid of player%::killcash}%" and "&6Cost to Upgrade: %{upgrades::%uuid of player%::killcash}%p"
+        else:
+            send "&cYou don't have enough points to buy this!" to player
+    
+    if event-item is a spyglass named "&6Unlock Recon":
+        cancel event
+        if {killPoints::%uuid of player%} >= 40:
+            if {upgrades::%uuid of player%::reconunlocked} is not set:
+                subtract 40 from {killPoints::%uuid of player%}
+                set {upgrades::%uuid of player%::reconunlocked} to true
+            else:
+                send "&aYou already have this upgrade!" to player
+        else:
+            send "&cYou don't have enough points to buy this!" to player
+
+    if event-item is a pink dye named "&6Unlock Support":
+        cancel event
+        if {killPoints::%uuid of player%} >= 40:
+            if {upgrades::%uuid of player%::supportunlocked} is not set:
+                subtract 40 from {killPoints::%uuid of player%}
+                set {upgrades::%uuid of player%::supportunlocked} to true
+            else:
+                send "&aYou already have this upgrade!" to player
+        else:
+            send "&cYou don't have enough points to buy this!" to player
+
+    if event-item is a green dye named "&6Unlock Demolitionist":
+        cancel event
+        if {killPoints::%uuid of player%} >= 30:
+            if {upgrades::%uuid of player%::demounlocked} is not set:
+                subtract 30 from {killPoints::%uuid of player%}
+                set {upgrades::%uuid of player%::demounlocked} to true
+            else:
+                send "&aYou already have this upgrade!" to player
+        else:
+            send "&cYou don't have enough points to buy this!" to player
+
+    if event-item is a lime dye named "&6Unlock FAMAS":
+        cancel event
+        if {killPoints::%uuid of player%} >= 15:
+            if {upgrades::%uuid of player%::famasunlocked} is not set:
+                subtract 15 from {killPoints::%uuid of player%}
+                set {upgrades::%uuid of player%::famasunlocked} to true
+            else:
+                send "&aYou already have this upgrade!" to player
+        else:
+            send "&cYou don't have enough points to buy this!" to player
+
+    if event-item is a orange dye named "&6Unlock Kriss Vector":
+        cancel event
+        if {killPoints::%uuid of player%} >= 15:
+            if {upgrades::%uuid of player%::vectorunlocked} is not set:
+                subtract 15 from {killPoints::%uuid of player%}
+                set {upgrades::%uuid of player%::vectorunlocked} to true
+            else:
+                send "&aYou already have this upgrade!" to player
+        else:
+            send "&cYou don't have enough points to buy this!" to player
+
+        
+
+            
+    if name of event-inventory is "Points: %{_points}%":
+        set name of player's current inventory to "Points: %{killPoints::%uuid of player%}%"
+
+
+command /shop:
+    trigger:
+        if {team::%uuid of player%} is set:
+            if {loadout::%uuid of player%} is "assault":
+                set {_inventory} to a chest inventory with 3 row named "Balance: $%{cash::%uuid of player%}%"
+                set slot 10 of {_inventory} to a iron ingot named "&fM4A1 Mags x2" with lore "$10"
+                set slot 11 of {_inventory} to a iron ingot named "&fGlock Mags x2" with lore "$5"
+                set slot 12 of {_inventory} to a cooked beef named "&fSteak x4" with lore "$10"
+                set slot 13 of {_inventory} to a egg named "&fGrenade x1" with lore "$10"
+                set slot 14 of {_inventory} to a snowball named "&fSmoke Grenade x1" with lore "$10"
+                set slot 15 of {_inventory} to a potion of speed named "&fSpeed Potion x1" with lore "$20"
+                set slot 16 of {_inventory} to a yellow dye named "&fDash Ability" with lore "$30"
+                open {_inventory} to player
+            
+            if {loadout::%uuid of player%} is "recon":
+                set {_inventory} to a chest inventory with 3 row named "Balance: $%{cash::%uuid of player%}%"
+                set slot 10 of {_inventory} to a iron ingot named "&fL30 Mags x1" with lore "$10"
+                set slot 11 of {_inventory} to a iron ingot named "&fGlock Mags x2" with lore "$5"
+                set slot 12 of {_inventory} to a cooked beef named "&fSteak x4" with lore "$10"
+                set slot 13 of {_inventory} to a egg named "&fGrenade x1" with lore "$10"
+                set slot 14 of {_inventory} to a snowball named "&fSmoke Grenade x1" with lore "$10"
+                set slot 15 of {_inventory} to a ladder named "&fLadder x16" with lore "$20"
+                set slot 16 of {_inventory} to a yellow dye named "&fDash Ability" with lore "$30"
+                open {_inventory} to player
+
+            if {loadout::%uuid of player%} is "engineer":
+                set {_inventory} to a chest inventory with 3 row named "Balance: $%{cash::%uuid of player%}%"
+                set slot 10 of {_inventory} to a iron ingot named "&fM4A1 Mags x2" with lore "$10"
+                set slot 11 of {_inventory} to a cooked beef named "&fSteak x4" with lore "$10"
+                set slot 12 of {_inventory} to a egg named "&fGrenade x1" with lore "$10"
+                set slot 13 of {_inventory} to a snowball named "&fSmoke Grenade x1" with lore "$10"
+                set slot 14 of {_inventory} to a flint and steel named "&fFlint and Steel x1" with lore "$10"
+                set slot 15 of {_inventory} to a stone pressure plate named "&fPressure Plate x4" with lore "$10"
+                set slot 16 of {_inventory} to a tnt named "&fTNT x4" with lore "$20"
+                open {_inventory} to player
+
+            if {loadout::%uuid of player%} is "support":
+                set {_inventory} to a chest inventory with 3 row named "Balance: $%{cash::%uuid of player%}%"
+                set slot 10 of {_inventory} to a iron ingot named "&fMinigun Chain x1" with lore "$10"
+                set slot 11 of {_inventory} to a cooked beef named "&fSteak x4" with lore "$10"
+                set slot 12 of {_inventory} to a egg named "&fGrenade x1" with lore "$10"
+                set slot 13 of {_inventory} to a snowball named "&fSmoke Grenade x1" with lore "$10"
+                set slot 14 of {_inventory} to a flint and steel named "&fFlint and Steel x1" with lore "$10"
+                set slot 15 of {_inventory} to a stone pressure plate named "&fPressure Plate x4" with lore "$10"
+                set slot 16 of {_inventory} to a tnt named "&fTNT x4" with lore "$20"
+                open {_inventory} to player
+        
+function joinGame(p: player):
+    if {started} is false:
+        startGame()
+        startTimer()
+    wait 1 tick
+    setTeam({_p})
+    addNoTag({_p})
+    #execute console command "/mv teleport %{_p}% %{map}%2"
+    wait 1.5 seconds
+   
+    respawnInGame({_p})
+    wait 1 seconds
+    send title "&f%{map}%" with subtitle "&f%{gameType}%" to {_p}
+    send "&a&lREAD THE STUFF BELOW" to {_p}
+    send "&6Switch a weapon to your offhand (press F) to reload!" to {_p}
+    send "&6Run /class and /shop" to {_p}
+    send "&6Get kills to earn points!" to {_p}
+    send "&6Run /radio to toggle music." to {_p}
+# Start and shop menus
+on inventory click:
+    if name of event-inventory is "Help":
+        cancel event
+
+on inventory click:
+    set {_balance} to {cash::%uuid of player%}
+    if event-item is diamond named "&fAssault": # event click
+        cancel event
+        if {team::%uuid of player%} is not set:
+            set {cash::%uuid of player%} to 0
+            close player's inventory
+            set {nextloadout::%uuid of player%} to "assault"
+            set {_inventory} to a chest inventory with 3 row named "Select Loadout"
+            set slot 11 of {_inventory} to a black dye named "&fSelect M4A1"
+            if {upgrades::%uuid of player%::famasunlocked} is true:
+                set slot 13 of {_inventory} to a lime dye named "&fSelect FAMAS"
+            if {upgrades::%uuid of player%::vectorunlocked} is true:
+                set slot 15 of {_inventory} to a orange dye named "&fSelect Kriss Vector"
+            open {_inventory} to player
+
+    if event-item is a black dye named "&fSelect M4A1":
+        cancel event
+        close player's inventory
+        set {mainweapon::%uuid of player%} to "M4A1"
+        if {team::%uuid of player%} is not set:
+            joinGame(player)
+
+    if event-item is a lime dye named "&fSelect FAMAS":
+        cancel event
+        close player's inventory
+        set {mainweapon::%uuid of player%} to "FAMAS"
+        if {team::%uuid of player%} is not set:
+            joinGame(player)
+
+    if event-item is a orange dye named "&fSelect Kriss Vector":
+        cancel event
+        close player's inventory
+        set {mainweapon::%uuid of player%} to "Vector"
+        if {team::%uuid of player%} is not set:
+            joinGame(player)
+
+    if event-item is diamond named "&fRecon": # event click
+        cancel event
+        if {upgrades::%uuid of player%::reconunlocked} is true:
+            if {team::%uuid of player%} is not set:
+                set {cash::%uuid of player%} to 0
+                close player's inventory
+                set {nextloadout::%uuid of player%} to "recon"
+                joinGame(player)
+        else:
+            send "&cUnlock this class in the shop!" to player
+
+    if event-item is diamond named "&fEngineer": # event click
+        cancel event
+        if {team::%uuid of player%} is not set:
+            set {cash::%uuid of player%} to 0
+            close player's inventory
+            set {nextloadout::%uuid of player%} to "engineer"
+            joinGame(player)
+
+    if event-item is diamond named "&fSupport": # event click
+        cancel event
+        if {upgrades::%uuid of player%::supportunlocked} is true:
+            if {team::%uuid of player%} is not set:
+                set {cash::%uuid of player%} to 0
+                close player's inventory
+                set {nextloadout::%uuid of player%} to "support"
+                joinGame(player)
+
+        else:
+            send "&cUnlock this class in the shop!" to player
+        
+    if event-item is diamond named "&fDemolitionist": # event click
+        cancel event
+        if {upgrades::%uuid of player%::demounlocked} is true:
+            if {team::%uuid of player%} is not set:
+                set {cash::%uuid of player%} to 0
+                close player's inventory
+                set {nextloadout::%uuid of player%} to "demo"
+                joinGame(player)
+        else:
+            send "&cUnlock this class in the shop!" to player
+
+    if event-item is diamond named "Select Assault":
+        cancel event
+        close player's inventory
+        set {nextloadout::%uuid of player%} to "assault"
+        set {_inventory} to a chest inventory with 3 row named "Select Loadout"
+        set {mainweapon::%uuid of player%} to "M4A1"
+        set slot 11 of {_inventory} to a black dye named "&fSelect M4A1"
+        set slot 13 of {_inventory} to a lime dye named "&fSelect FAMAS"
+        set slot 15 of {_inventory} to a orange dye named "&fSelect Kriss Vector"
+        open {_inventory} to player
+
+    if event-item is diamond named "Select Recon":
+        cancel event
+        if {upgrades::%uuid of player%::reconunlocked} is true:
+            close player's inventory
+            set {nextloadout::%uuid of player%} to "recon"
+        else:
+            send "&cUnlock this class in the shop!" to player
+
+    if event-item is diamond named "Select Engineer":
+        cancel event
+        close player's inventory
+        set {lnextoadout::%uuid of player%} to "engineer"
+
+    if event-item is diamond named "Select Support":
+        cancel event
+        if {upgrades::%uuid of player%::supportunlocked} is true:
+            close player's inventory
+            set {nextloadout::%uuid of player%} to "support"
+        else:
+            send "&cUnlock this class in the shop!" to player
+        
+    if event-item is diamond named "Select Demolitionist":
+        cancel event
+        if {upgrades::%uuid of player%::demounlocked} is true:
+            close player's inventory
+            set {nextloadout::%uuid of player%} to "demo"
+        else:
+            send "&cUnlock this class in the shop!" to player
+
+    if event-item is a barrier:
+        cancel event
+
+    if event-item is a iron ingot named "&fM4A1 Mags x2":
+        cancel event
+        if {cash::%uuid of player%} >= 10:
+            give 2 iron ingot named "M4A1 Mag" to player
+            add -10 to {cash::%uuid of player%}
+
+    if event-item is a iron ingot named "&fGlock Mags x2":
+        cancel event
+        if {cash::%uuid of player%} >= 5:
+            give 2 iron ingot named "Glock Mag" to player
+            add -5 to {cash::%uuid of player%}
+
+    if event-item is a cooked beef named "&fSteak x4":
+        cancel event
+        if {cash::%uuid of player%} >= 10:
+            give 4 cooked beef named "Steak" to player
+            add -10 to {cash::%uuid of player%}
+
+    if event-item is a egg named "&fGrenade x1":
+        cancel event
+        if {cash::%uuid of player%} >= 10:
+            give egg named "Grenade" to player
+            add -10 to {cash::%uuid of player%}
+
+    if event-item is a snowball named "&fSmoke Grenade x1":
+        cancel event
+        if {cash::%uuid of player%} >= 10:
+            give snowball named "Smoke Grenade" to player
+            add -10 to {cash::%uuid of player%}
+
+    if event-item is a potion of speed named "&fSpeed Potion x1":
+        cancel event
+        if {cash::%uuid of player%} >= 20:
+            give potion of speed to player
+            add -20 to {cash::%uuid of player%}
+
+    if event-item is a yellow dye named "&fDash Ability":
+        cancel event
+        if {cash::%uuid of player%} >= 30:
+            give yellow dye named "Dash" to player
+            add -30 to {cash::%uuid of player%}
+
+    if event-item is a ladder named "&fLadder x16":
+        cancel event
+        if {cash::%uuid of player%} >= 30:
+            give 16 ladder to player
+            add -20 to {cash::%uuid of player%}
+
+    if event-item is a flint and steel named "&fFlint and Steel x1":
+        cancel event
+        if {cash::%uuid of player%} >= 10:
+            give flint and steel to player
+            add -10 to {cash::%uuid of player%}
+
+    if event-item is a stone pressure plate named "&fPressure Plate x4":
+        cancel event
+        if {cash::%uuid of player%} >= 10:
+            give 4 stone pressure plate to player
+            add -10 to {cash::%uuid of player%}
+
+    if event-item is a tnt named "&fTNT x4":
+        cancel event
+        if {cash::%uuid of player%} >= 20:
+            give 4 tnt to player
+            add -20 to {cash::%uuid of player%}
+    
+    if event-item is a iron ingot named "&fMinigun Chain x1":
+        cancel event
+        if {cash::%uuid of player%} >= 10:
+            give iron ingot named "Minigun Chain" to player
+            add -10 to {cash::%uuid of player%}
+
+
+
+    if name of event-inventory is "Balance: $%{_balance}%":
+        set name of player's current inventory to "Balance: $%{cash::%uuid of player%}%"
+
+on death of player:
+    if {team::%uuid of attacker%} is set:
+        if {gameType} is "team":
+            if attacker is not victim:
+                if {team::%uuid of attacker%} is not {team::%uuid of victim%}:
+                    add 1 to {killPoints::%uuid of attacker%}
+                    add {upgrades::%uuid of attacker%::killcash} to {cash::%uuid of attacker%}
+                    send "&aKill +$%{upgrades::%uuid of attacker%::killcash}%" to attacker
+                    if {team::%uuid of victim%} = "red":
+                        add 1 to {bluePoints}
+                    else if {team::%uuid of victim%} = "blue":
+                        add 1 to {redPoints}
+                #removeNoTag(victim)
+                loop all players:
+                    if {team::%uuid of loop-player%} is set:
+                        set title of loop-player's fastboard to "&e[Team Scores]"
+                        set line 1 of loop-player's fastboard to "&cRed Team - %{redPoints}%"
+                        set line 2 of loop-player's fastboard to "&bBlue Team - %{bluePoints}%"
+            
+        if {gameType} is "ffa":
+            if attacker is a player:
+                if attacker is not victim:
+                    add 1 to {killPoints::%uuid of attacker%}
+                    add {upgrades::%uuid of attacker%::killcash} to {cash::%uuid of attacker%}
+                    send "&aKill +$%{upgrades::%uuid of attacker%::killcash}%" to attacker
+
+
+on respawn:
+    if {gameType} is "team":
+        if {team::%uuid of player%} is "red":
+            wait 5 ticks
+            respawnInGame(player)
+        if {team::%uuid of player%} is "blue":
+            wait 5 ticks
+            respawnInGame(player)
+    else if {gameType} is "ffa":
+        if {team::%uuid of player%} is set:
+            wait 5 ticks
+            respawnInGame(player)
